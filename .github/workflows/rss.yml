@@ -1,0 +1,31 @@
+name: Update RSS Feed HTML Every 15 Min
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install feedparser
+      run: pip install feedparser
+
+    - name: Run feed fetch script
+      run: python news_uploader.py
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add news_latest.html
+        git commit -m "♻️ Auto update RSS feed"
+        git push
