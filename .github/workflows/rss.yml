@@ -10,30 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install feedparser and requests
-      run: |
-        pip install feedparser requests
+      - name: Install required packages
+        run: pip install feedparser
 
-    - name: Run Python script to update HTML
-      run: |
-        python news_latest.html.py
+      - name: Run the Python script
+        run: python news_uploader.py
 
-    - name: Push changes using Personal Access Token
-      env:
-        TOKEN: ${{ secrets.GH_TOKEN }}
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git add news_latest.html
-        timestamp=$(date)
-        git commit -m "♻️ Auto update RSS feed at $timestamp" || echo "No changes to commit"
-        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-        git push
+      - name: Commit and push if changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add news_latest.html
+          git commit -m "♻️ Auto update RSS feed at $(date -u)" || echo "No changes to commit"
+          git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
