@@ -2,7 +2,7 @@ name: Update RSS Feed HTML Every 15 Minutes
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -18,17 +18,22 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install feedparser
-      run: pip install feedparser
+    - name: Install feedparser and requests
+      run: |
+        pip install feedparser requests
 
-    - name: Run feed fetch script
-      run: python news_uploader.py
+    - name: Run Python script to update HTML
+      run: |
+        python news_latest.html.py
 
-    - name: Force Commit and Push
+    - name: Push changes using Personal Access Token
+      env:
+        TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add news_latest.html
         timestamp=$(date)
         git commit -m "♻️ Auto update RSS feed at $timestamp" || echo "No changes to commit"
+        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
         git push
